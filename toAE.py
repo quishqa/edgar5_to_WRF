@@ -27,8 +27,8 @@ def add_date_datesec(edgar_file, year=2015):
     ----------
     edgar_file : str
         edgar monthly emission file.
-    year : int
-        year of the emission file.
+    year : int, optional
+        year of the emission file. The default is 2015
 
     Returns
     -------
@@ -72,6 +72,17 @@ def concat_sector_by_month(sector_path):
     return year_emiss
 
 def join_pol_by_sector(pol_path, total=False):
+    '''
+    Read sector emissions and save them in one dict. If total = True
+    it returns the total emission
+
+    Parameters
+    ----------
+    pol_path : str
+        Polutant emissions folder where sectors are
+    total : Bool, optional
+        sum all the sector emission. The default is False
+    '''
     pol_folder = Path(pol_path)
     pol_sectors = [str(folder) for folder in pol_folder.glob("*/")]
     pol_by_sector = {sector.split("/")[-1]: concat_sector_by_month(sector) 
