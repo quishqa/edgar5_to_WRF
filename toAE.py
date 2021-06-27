@@ -60,7 +60,7 @@ def concat_sector_by_month(sector_path):
     Returns
     -------
     year_emiss: xarray Dataset
-        montly emission into one netcdf
+        montly emission into one dataset
 
     '''
     sector = Path(sector_path)
@@ -82,6 +82,13 @@ def join_pol_by_sector(pol_path, total=False):
         Polutant emissions folder where sectors are
     total : Bool, optional
         sum all the sector emission. The default is False
+    
+    Returns
+    -------
+    pol_emi : xarray Dataset
+       Total emission (sum of all sources)
+    pol_by_sector: dictionary
+        Dictionary with sectors monthtly emission in one dataset
     '''
     pol_folder = Path(pol_path)
     pol_sectors = [str(folder) for folder in pol_folder.glob("*/")]
@@ -94,21 +101,48 @@ def join_pol_by_sector(pol_path, total=False):
     else:
         return pol_by_sector
 
+def group_sectors(pol_by_sector, sectors):
+    '''
+    Group emissions sector in a single group (i.e. IPCC 96)
+
+    Parameters
+    ----------
+    pol_by_sector : dict
+        Dictionary with sectors monthly emission in onde dataset
+    sectors : list
+        List of sectors to merge
+    '''
+    group = {sector: pol_by_sector[sector] for sector in sectors 
+             if sector in pol_by_sector.keys()}
+    group_total = sum(group.values())
+    group_total["date"] = pol_by_sector[list(pol_by_sector.keys())[1]].date
+    return group_total
+    
+# Group sectors 
+energy = ["ENE", "REF_TRF", "TNR_Aviation_CDS", "TNR_Aviation_CRS",
+          "TNR_Aviation_LTO", "TNR_Aviation_SPS", "TRO_RES", "TRO_noRES",
+          "TNR_Other", "TNR_Ship", "RCO", "PRO"]
+industrial = ["NMM", "CHE", "IRO", "NFE", "NEU", "FOO_PAP"]
+solvents = ["PRU_SOL"]
+agriculture = ["MNM", "AWB", "AGS"]
+waste = ["SWD_LDF", "SWD_INC", "WWT"]
+
+# Other groups
+road_transport = ["TRO_noRES", "TRO_RES"]
+energy_no_road = [pol for pol in energy if pol not in road_transport]
+
 AGS_path = "/scr2/mgavidia/wrf_utils/edgar5_monthly/AGS"
 pm25_ags = concat_sector_by_month(AGS_path)
 
 
 pol_path = "/scr2/mgavidia/wrf_utils/edgar5_monthly/"
-#pols = Path(pol_path)
-#pol_sectors = [str(folder) for folder in pols.glob("*/")]
-#
-#pm25_by_sector = {(sector.split("/")[-1]):concat_sector_by_month(sector) 
-#                  for sector in pol_sectors}
-#
+
 pm25_sec = join_pol_by_sector(pol_path)
 pm25 = join_pol_by_sector(pol_path, total=True)
 
+pm25.to_netcdf("v50_PM2.5_test_year_total.nc")
 
+trans_pm25 = group_sectors(pm25_sec, road_transport)
 
 
 
