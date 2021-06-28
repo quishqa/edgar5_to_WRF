@@ -3,7 +3,6 @@
 
 import xarray as xr
 import numpy as np
-import os
 from pathlib import Path
 
 POLS = ["BC", "CO", "NMVOC", "NOx", "NH3",
@@ -117,7 +116,28 @@ def group_sectors(pol_by_sector, sectors):
     group_total = sum(group.values())
     group_total["date"] = pol_by_sector[list(pol_by_sector.keys())[1]].date
     return group_total
-    
+
+def write_netcdf_toAE(emiss, pollutant, prefix="v50_",
+                      suffix=".0.1x0.1.nc", other=""):
+    '''
+    Export emission dataset into netcdf
+
+    Parameters
+    ----------
+    emiss : xarray Dataset
+        Emission dataset to export to netcdf
+    pollutatnt : str
+        Name of emitted pollutant
+    prefix : str, optional
+        prefix used in anthro emiss. Default is "v50_"
+    suffix : str, optional
+        suffix to add to the file name. Default is "0.1x0.1.nc"
+    other : str, optional
+    '''
+    file_name = (prefix + pollutant + "_2015" + other +  suffix)
+    print(file_name)
+    emiss.to_netcdf(file_name, mode="a")
+
 # Group sectors 
 energy = ["ENE", "REF_TRF", "TNR_Aviation_CDS", "TNR_Aviation_CRS",
           "TNR_Aviation_LTO", "TNR_Aviation_SPS", "TRO_RES", "TRO_noRES",
@@ -135,16 +155,22 @@ AGS_path = "/scr2/mgavidia/wrf_utils/edgar5_monthly/AGS"
 pm25_ags = concat_sector_by_month(AGS_path)
 
 
-pol_path = "/scr2/mgavidia/wrf_utils/edgar5_monthly/"
+pol_path = "/scr2/mgavidia/wrf_utils/edgar5/PM2.5"
 
 pm25_sec = join_pol_by_sector(pol_path)
 pm25 = join_pol_by_sector(pol_path, total=True)
 
-pm25.to_netcdf("v50_PM2.5_test_year_total.nc")
-
+#write_netcdf_toAE(pm25, "PM2.5")
 trans_pm25 = group_sectors(pm25_sec, road_transport)
 
+bc_path = "/scr2/mgavidia/wrf_utils/edgar5/BC"
+oc_path = "/scr2/mgavidia/wrf_utils/edgar5/OC/"
 
+bc = join_pol_by_sector(bc_path, total=True)
+oc = join_pol_by_sector(oc_path, total=True)
+
+#write_netcdf_toAE(oc, "OC")
+#write_netcdf_toAE(bc, "BC")
 
 
 
