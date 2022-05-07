@@ -151,9 +151,15 @@ waste = ["SWD_LDF", "SWD_INC", "WWT"]
 road_transport = ["TRO_noRES", "TRO_RES"]
 energy_no_road = [pol for pol in energy if pol not in road_transport]
 
+# Testing concating month from sectors
 AGS_path = "/scr2/mgavidia/wrf_utils/edgar5_monthly/AGS"
 pm25_ags = concat_sector_by_month(AGS_path)
 
+
+# The folder structure is [POLLUTANT_NAME]/[SECTOR]/[EMISS_MONTH]
+# For example in my case the folder is
+# a January monthly emission is located in:
+# PM2.5/AGS/v50_PM2.5_2015_1_AGS.0.1x0.1.nc
 
 pol_path = "/scr2/mgavidia/wrf_utils/edgar5/PM2.5"
 
